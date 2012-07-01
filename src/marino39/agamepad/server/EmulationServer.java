@@ -105,11 +105,9 @@ public class EmulationServer {
 											MouseMovePacket mmp = new MouseMovePacket(data);
 											float destX = displayX/2 - displayX/2*mmp.getX();
 											float destY = displayY/2 - displayY/2*mmp.getY();
-											System.out.println("x: " + mmp.getX() + " y: " + mmp.getY());
 											
 											diabloIIIControler.mouseMove((int) destX, (int) destY);			
-											break;
-										
+											break;								
 									}
 								}
 							} catch (IOException e) {
