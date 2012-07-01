@@ -103,21 +103,11 @@ public class EmulationServer {
 
 										case Packet.OPERATION_MOUSE_MOVE:
 											MouseMovePacket mmp = new MouseMovePacket(data);
-											//System.out.println(":: " + mmp.toString());			
-											float x = mmp.getX() - lastX;
-											float y = mmp.getY() - lastY;
-											float partX = (float)x/(float)ratio;
-											float partY = (float)y/(float)ratio;
-											float partCompX = displayX/2 - displayX/2*lastX;
-											float partCompY = displayY/2 - displayY/2*lastY;
-											//System.out.println(":: partX " + partX + " partY " + partY);
-											for (int j = 0; j < ratio; j++) {
-												int destX = (int) (partCompX -  displayX/2*partX*j);
-												int destY = (int) (partCompY -  displayY/2*partY*j);
-												diabloIIIControler.mouseMove(destX, destY);		
-											}
-											lastX = mmp.getX();
-											lastY = mmp.getY();
+											float destX = displayX/2 - displayX/2*mmp.getX();
+											float destY = displayY/2 - displayY/2*mmp.getY();
+											System.out.println("x: " + mmp.getX() + " y: " + mmp.getY());
+											
+											diabloIIIControler.mouseMove((int) destX, (int) destY);			
 											break;
 										
 									}
