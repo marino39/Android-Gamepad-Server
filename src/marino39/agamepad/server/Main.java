@@ -7,28 +7,22 @@ import java.net.UnknownHostException;
 
 public class Main {
 
-	public static void main(String[] args) {
-		try {
+	public static void main(String[] args) throws Exception{
+		
 			// Config
 			ServerConfiguration sc = new ServerConfiguration();
-
-			if (sc.isConfig_ok()) {
+			
+			// GUi ;)
+			new GUI(sc);
+			
+			//if (sc.isConfig_ok()) {
 				// D3GamePad Server
-				EmulationServer s = new EmulationServer(sc);
-				s.start();
+				//EmulationServer s = new EmulationServer(sc);
+				//s.start();
 			
 				// Broadcast Server
-				ServerInfoBroadcaster sib = new ServerInfoBroadcaster(sc);
-				sib.start();
-			}
-		} catch (UnknownHostException e1) {
-			e1.printStackTrace();
-		} catch (SocketException e1) {
-			e1.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (AWTException e) {
-			e.printStackTrace();
-		}	
+				//ServerInfoBroadcaster sib = new ServerInfoBroadcaster(sc);
+				//sib.start();
+			//}
 	}
 }

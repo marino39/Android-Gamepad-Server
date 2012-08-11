@@ -90,11 +90,11 @@ public class ServerConfiguration {
 		return config_ok;
 	}
 
-	private void printConfig() {
-		System.out.println("BroadCast Server IP: " + broadcastAddress);
-		System.out.println("BroadCast Server PORT: " + broadcastPort);
-		System.out.println("D3GAmePad Server IP: " + gamePadServerAddress);
-		System.out.println("D3GAmePad Server PORT: " + gamePadServerPort);
+	public void printConfig() {
+		GUI.jtaLogArea.append("BroadCast Server IP: " + broadcastAddress +"\n"+
+		"BroadCast Server PORT: " + broadcastPort +"\n"+
+		"D3GAmePad Server IP: " + gamePadServerAddress+"\n"+
+		"D3GAmePad Server PORT: " + gamePadServerPort+"\n");
 	}
 	
 }

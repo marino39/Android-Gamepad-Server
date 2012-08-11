@@ -42,9 +42,9 @@ public class EmulationServer {
 	public void start() throws IOException, AWTException {
 		diabloIIIControler = new Robot();
 		diabloIIIControler.setAutoDelay(0);
-		System.out.println(":: Creating Server Socket");
+		GUI.jtaLogArea.append("\n:: Creating Server Socket");
 		final ServerSocket server = new ServerSocket(serverConfig.getGamePadServerPort());
-		System.out.println(":: Waiting for Clients");
+		GUI.jtaLogArea.append("\n:: Waiting for Clients");
 		
 		new Thread(new Runnable() {
 			
@@ -53,7 +53,7 @@ public class EmulationServer {
 				while (true) {
 					try {
 						addClient(server.accept());
-						System.out.println(":: New Client");
+						GUI.jtaLogArea.append("\n:: New Client");
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -84,7 +84,7 @@ public class EmulationServer {
 									
 										case Packet.OPERATION_KEY_DOWN:
 											KeyDownPacket kdp = new KeyDownPacket(data);
-											System.out.println(":: " + kdp.toString());
+											GUI.jtaLogArea.append("\n:: " + kdp.toString());
 											int s = InputEvent.ALT_DOWN_MASK;
 											if (kdp.getKey() == InputEvent.BUTTON1_MASK || kdp.getKey() == InputEvent.BUTTON3_MASK || kdp.getKey() == 0)
 												diabloIIIControler.mousePress(kdp.getKey());
@@ -94,7 +94,7 @@ public class EmulationServer {
 										
 										case Packet.OPERATION_KEY_UP:
 											KeyUpPacket kup = new KeyUpPacket(data);
-											System.out.println(":: " + kup.toString());						
+											GUI.jtaLogArea.append("\n:: " + kup.toString());						
 											if (kup.getKey() == InputEvent.BUTTON1_MASK || kup.getKey() == InputEvent.BUTTON3_MASK || kup.getKey() == 0)
 												diabloIIIControler.mouseRelease(kup.getKey());
 											else
