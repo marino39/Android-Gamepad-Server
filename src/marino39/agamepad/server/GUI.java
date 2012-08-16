@@ -2,7 +2,12 @@ package marino39.agamepad.server;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.IOException;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+
 
 import javax.swing.*;
 
@@ -29,8 +34,16 @@ public class GUI extends JFrame{
 	JButton jbStartBroadcast = new JButton("Start Broadcast");
 	JButton jbStartServer = new JButton("Start Server");
 	
-	public GUI(final ServerConfiguration sc){
+	private static ServerInfoBroadcaster sib;
+	private static EmulationServer s;
+	
+	boolean flaga = true;
+	
+	public GUI() throws Exception {
 		super("Serwer");
+		
+		final ServerConfiguration sc = new ServerConfiguration();
+		final TrayIcon trayIcon;
 		
 		JPanel serverPanel = new JPanel();
 		serverPanel.setLayout(null);
@@ -96,7 +109,7 @@ public class GUI extends JFrame{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (sc.isConfig_ok()){
-					ServerInfoBroadcaster sib = new ServerInfoBroadcaster(sc);
+					sib = new ServerInfoBroadcaster(sc);
 					sib.start();
 					label7.setText("Online");
 					label7.setForeground(Color.RED);
@@ -108,8 +121,9 @@ public class GUI extends JFrame{
 		jbStartServer.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e){
-				if (sc.isConfig_ok()){
-					EmulationServer s = new EmulationServer(sc);
+				if (sc.isConfig_ok() && flaga == true){
+					sc.saveConfig();
+					s = new EmulationServer(sc);
 					try {
 						s.start();
 					} catch (IOException e1) {
@@ -119,6 +133,26 @@ public class GUI extends JFrame{
 					}
 					label9.setText("Online");
 					label9.setForeground(Color.RED);
+					flaga = false;
+					jbStartServer.setLabel("Stop Server");
+				}else if(sc.isConfig_ok() && flaga == false){
+					s.threadA.stop();
+					s.threadB.stop();
+					try {
+						s.server.close();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					
+					label9.setText("Offline");
+					label9.setForeground(Color.BLACK);
+					jbStartServer.setLabel("Start Server");
+					
+					flaga = true;
+					jtaLogArea.append("\n:: Server stoped");
+					jtaLogArea.append("\n");
+					
 				}
 			}
 		});
@@ -129,7 +163,55 @@ public class GUI extends JFrame{
 		setPreferredSize(new Dimension(500,410));
 		setResizable(false);
 		pack();
-		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		setDefaultCloseOperation(HIDE_ON_CLOSE);
 		setVisible(true);
+		
+		
+		//Tray icon
+		if (SystemTray.isSupported()) {
+		    SystemTray tray = SystemTray.getSystemTray();
+		    Image image = Toolkit.getDefaultToolkit().getImage("ticon2.gif");
+
+		    ActionListener exitListener = new ActionListener() {
+		        public void actionPerformed(ActionEvent e) {
+		            System.exit(0);
+		        }
+		    };
+		    ActionListener maxListener = new ActionListener(){
+		    	public void actionPerformed(ActionEvent e){
+		    		setVisible(true);
+		    	}
+		    };
+		            
+		    PopupMenu popup = new PopupMenu();
+		    MenuItem exitItem = new MenuItem("Exit");
+		    MenuItem maxItem = new MenuItem("Open");
+		    maxItem.addActionListener(maxListener);
+		    exitItem.addActionListener(exitListener);
+		    popup.add(maxItem);
+		    popup.add(exitItem);
+
+		    trayIcon = new TrayIcon(image, "DiabloPad", popup);
+
+		    ActionListener actionListener = new ActionListener() {
+		        public void actionPerformed(ActionEvent e) {
+		            trayIcon.displayMessage("Diablo3 Pad", 
+		                "This is DiabloPad Server app",
+		                TrayIcon.MessageType.INFO);
+		        }
+		    };
+		            
+		    trayIcon.setImageAutoSize(true);
+		    trayIcon.addActionListener(actionListener);
+
+		    try {
+		        tray.add(trayIcon);
+		    } catch (AWTException e) {
+		        System.err.println("TrayIcon could not be added.");
+		    }
+
+		} else {
+			System.err.println("System Tray is not supported");
+		}
 	}
 }

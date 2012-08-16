@@ -5,7 +5,15 @@ import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.FileNotFoundException; 
+import java.util.Scanner;
 
 
 public class ServerConfiguration {
@@ -25,23 +33,51 @@ public class ServerConfiguration {
 	 * @throws UnknownHostException
 	 * @throws SocketException 
 	 */
-	public ServerConfiguration() throws UnknownHostException, SocketException {
-		InetAddress ia = Inet4Address.getLocalHost();
-		gamePadServerAddress = ia.getHostAddress();
-		NetworkInterface ni = NetworkInterface.getByInetAddress(ia);
-		List<InterfaceAddress> lia =  ni.getInterfaceAddresses();
-		InetAddress bia = null; // Broadcast InetAddress
+	public ServerConfiguration() throws UnknownHostException, SocketException, FileNotFoundException {
 		
-		for (int i = 0; i < lia.size(); i++) {
-			InterfaceAddress ifa= lia.get(i);
-			if (ifa.getAddress().getHostAddress().equalsIgnoreCase(ia.getHostAddress())) {
-				bia = ifa.getBroadcast();
+		File fileToRead = new File("config.txt");
+		
+		if(fileToRead.isFile()){
+			BufferedReader config = new BufferedReader(new FileReader(fileToRead));
+			ArrayList list = new ArrayList();
+			String temp1;
+			
+			try {
+				while((temp1 = config.readLine()) != null){
+					list.add(temp1);
+					//System.out.println(temp1); fore some tests
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
+			
+			broadcastAddress = list.get(0).toString();
+			//broadcastPort = Integer.parseInt(list.get(2).toString());
+			gamePadServerAddress = list.get(2).toString();
+			//gamePadServerPort = Integer.parseInt(list.get(4).toString());
+			
+			printConfig();
+			config_ok = true;
+			
 		}
+		else{
+			InetAddress ia = Inet4Address.getLocalHost();
+			gamePadServerAddress = ia.getHostAddress();
+			NetworkInterface ni = NetworkInterface.getByInetAddress(ia);
+			List<InterfaceAddress> lia =  ni.getInterfaceAddresses();
+			InetAddress bia = null; // Broadcast InetAddress
 		
-		broadcastAddress = "255.255.255.255";	
-		printConfig();
-		config_ok = true;
+			for (int i = 0; i < lia.size(); i++) {
+				InterfaceAddress ifa= lia.get(i);
+				if (ifa.getAddress().getHostAddress().equalsIgnoreCase(ia.getHostAddress())) {
+					bia = ifa.getBroadcast();
+				}
+			}
+		
+			broadcastAddress = "255.255.255.255";	
+			printConfig();
+			config_ok = true;
+		}
 	}
 	
 	public String getBroadcastAddress() {
@@ -95,6 +131,20 @@ public class ServerConfiguration {
 		"BroadCast Server PORT: " + broadcastPort +"\n"+
 		"D3GAmePad Server IP: " + gamePadServerAddress+"\n"+
 		"D3GAmePad Server PORT: " + gamePadServerPort+"\n");
+	}
+	
+	public void saveConfig(){
+		try {
+			PrintWriter saveToFile = new PrintWriter("config.txt");
+			saveToFile.println(broadcastAddress +"\r\n"+
+					broadcastPort +"\r\n"+
+					gamePadServerAddress+"\r\n"+
+					gamePadServerPort+"\r\n");
+			saveToFile.close();
+		} catch (FileNotFoundException e) {
+			System.err.println("File config.txt nof found");
+			e.printStackTrace();
+		}
 	}
 	
 }

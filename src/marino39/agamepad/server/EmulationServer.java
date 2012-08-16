@@ -31,6 +31,10 @@ public class EmulationServer {
 	private String localAddress;
 	private ServerConfiguration serverConfig;
 	
+	Thread threadA = null;
+	Thread threadB = null;
+	ServerSocket server = null;
+	
 	public EmulationServer(ServerConfiguration sc) {
 		this.serverConfig = sc;
 		Toolkit toolkit = Toolkit.getDefaultToolkit();
@@ -43,10 +47,10 @@ public class EmulationServer {
 		diabloIIIControler = new Robot();
 		diabloIIIControler.setAutoDelay(0);
 		GUI.jtaLogArea.append("\n:: Creating Server Socket");
-		final ServerSocket server = new ServerSocket(serverConfig.getGamePadServerPort());
+		server = new ServerSocket(serverConfig.getGamePadServerPort());
 		GUI.jtaLogArea.append("\n:: Waiting for Clients");
 		
-		new Thread(new Runnable() {
+		threadA = new Thread(new Runnable() {
 			
 			@Override
 			public void run() {
@@ -60,9 +64,10 @@ public class EmulationServer {
 					}				
 				}
 			}
-		}).start();
+		});
+		threadA.start();
 		
-		new Thread(new Runnable() {
+		threadB = new Thread  (new Runnable() {
 			
 			@Override
 			public void run() {
@@ -124,7 +129,8 @@ public class EmulationServer {
 				}
 			}
 			
-		}).start();
+		});
+		threadB.start();
 
 	}
 	
