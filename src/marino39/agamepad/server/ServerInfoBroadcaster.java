@@ -13,8 +13,8 @@ import java.net.UnknownHostException;
 
 public class ServerInfoBroadcaster implements Runnable {
 	
-	private Thread main;
-	private DatagramSocket bSocket;
+	Thread main;
+	DatagramSocket bSocket;
 	private ServerConfiguration serverConfig;
 	
 	public ServerInfoBroadcaster(ServerConfiguration sc) {

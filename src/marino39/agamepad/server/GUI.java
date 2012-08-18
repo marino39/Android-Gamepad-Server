@@ -4,9 +4,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 
 
 import javax.swing.*;
@@ -24,12 +28,13 @@ public class GUI extends JFrame{
 	JLabel label8 = new JLabel("Remote Control Server:");
 	JLabel label9 = new JLabel("Offline");
 	
-	JTextField jtfBroadcastPort = new JTextField();
-	JTextField jtfServerPort = new JTextField();
+	static JTextField jtfBroadcastPort = new JTextField();
+	static JTextField jtfServerPort = new JTextField();
 	JTextField jtfServerName = new JTextField();
 	
 	static JTextArea jtaLogArea = new JTextArea();
 	JScrollPane jspLogArea = new JScrollPane(jtaLogArea, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+	
 	
 	JButton jbStartBroadcast = new JButton("Start Broadcast");
 	JButton jbStartServer = new JButton("Start Server");
@@ -37,7 +42,10 @@ public class GUI extends JFrame{
 	private static ServerInfoBroadcaster sib;
 	private static EmulationServer s;
 	
-	boolean flaga = true;
+	boolean flagaBroadcast = true;
+	boolean flagaServer = true;
+	
+	File fileToRead = new File("config.txt");
 	
 	public GUI() throws Exception {
 		super("Serwer");
@@ -79,12 +87,12 @@ public class GUI extends JFrame{
 		
 		serverPanel.add(jtfBroadcastPort);
 		jtfBroadcastPort.setBounds(105,310,100,20);
-		jtfBroadcastPort.setEditable(false);
+		jtfBroadcastPort.setEditable(true);
 		jtfBroadcastPort.setText(Integer.toString(sc.getBroadcastPort()));
 		
 		serverPanel.add(jtfServerPort);
 		jtfServerPort.setBounds(105,340,100,20);
-		jtfServerPort.setEditable(false);
+		jtfServerPort.setEditable(true);
 		jtfServerPort.setText(Integer.toString(sc.getGamePadServerPort()));
 		
 		serverPanel.add(jtfServerName);
@@ -102,17 +110,53 @@ public class GUI extends JFrame{
 		
 		jspLogArea.setBounds(7,25,300,270);
 		jtaLogArea.setEditable(false);
+		jtaLogArea.setCaretPosition(jtaLogArea.getDocument().getLength()); 
 		serverPanel.add(jspLogArea);
+		
+		if(fileToRead.isFile()){
+			BufferedReader config = new BufferedReader(new FileReader(fileToRead));
+			ArrayList list = new ArrayList();
+			String temp1;
+			
+			try {
+				while((temp1 = config.readLine()) != null){
+					list.add(temp1);
+					//System.out.println(temp1); fore some tests
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			jtfBroadcastPort.setText(list.get(1).toString());
+			jtfServerPort.setText(list.get(3).toString());
+			jtaLogArea.append("\n:: Server and Broadcast Ports loaded from file");
+		}else{
+			jtaLogArea.append("\n:: Server and Broadcast Ports are default");
+		}
 		
 		// Broadcast Server
 		jbStartBroadcast.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (sc.isConfig_ok()){
+				if (sc.isConfig_ok() && flagaBroadcast == true){
 					sib = new ServerInfoBroadcaster(sc);
 					sib.start();
+					if((jtfBroadcastPort != null)){
+						sc.broadcastPort = Integer.parseInt(jtfBroadcastPort.getText());
+					}
 					label7.setText("Online");
+					label7.setForeground(Color.GREEN);
+					jbStartBroadcast.setLabel("Stop Broadcast");
+					jtaLogArea.append("\n:: Broadcast started");
+					flagaBroadcast = false;
+				}else if(sc.isConfig_ok() && flagaBroadcast == false){
+					sib.main.stop();
+					sib.bSocket.close();
+					label7.setText("Offline");
 					label7.setForeground(Color.RED);
+					jbStartBroadcast.setLabel("Start Broadcast");
+					jtaLogArea.append("\n:: Broadcast stopped");
+					flagaBroadcast = true;
 				}
 			}
 		});
@@ -121,7 +165,10 @@ public class GUI extends JFrame{
 		jbStartServer.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e){
-				if (sc.isConfig_ok() && flaga == true){
+				if (sc.isConfig_ok() && flagaServer == true){
+					if((jtfServerName != null)){
+						sc.gamePadServerPort = Integer.parseInt(jtfServerPort.getText());
+					}
 					sc.saveConfig();
 					s = new EmulationServer(sc);
 					try {
@@ -132,10 +179,10 @@ public class GUI extends JFrame{
 						e1.printStackTrace();
 					}
 					label9.setText("Online");
-					label9.setForeground(Color.RED);
-					flaga = false;
+					label9.setForeground(Color.GREEN);
+					flagaServer = false;
 					jbStartServer.setLabel("Stop Server");
-				}else if(sc.isConfig_ok() && flaga == false){
+				}else if(sc.isConfig_ok() && flagaServer == false){
 					s.threadA.stop();
 					s.threadB.stop();
 					try {
@@ -146,10 +193,10 @@ public class GUI extends JFrame{
 					}
 					
 					label9.setText("Offline");
-					label9.setForeground(Color.BLACK);
+					label9.setForeground(Color.RED);
 					jbStartServer.setLabel("Start Server");
 					
-					flaga = true;
+					flagaServer = true;
 					jtaLogArea.append("\n:: Server stoped");
 					jtaLogArea.append("\n");
 					
@@ -191,13 +238,14 @@ public class GUI extends JFrame{
 		    popup.add(maxItem);
 		    popup.add(exitItem);
 
-		    trayIcon = new TrayIcon(image, "DiabloPad", popup);
+		    trayIcon = new TrayIcon(image, "Android Gamepad Server", popup);
 
 		    ActionListener actionListener = new ActionListener() {
 		        public void actionPerformed(ActionEvent e) {
-		            trayIcon.displayMessage("Diablo3 Pad", 
-		                "This is DiabloPad Server app",
+		            trayIcon.displayMessage("Android Gamepad Server", 
+		                "This is Android Gamepad Server app.\nHave fun!",
 		                TrayIcon.MessageType.INFO);
+		            	setVisible(true);
 		        }
 		    };
 		            

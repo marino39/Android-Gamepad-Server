@@ -23,10 +23,10 @@ public class ServerConfiguration {
 	
 	private String broadcastAddress;
 	private String gamePadServerAddress;
-	private int broadcastPort = BROADCAST_PORT;
-	private int gamePadServerPort = D3GAMEPADSERVER_PORT;
+	int broadcastPort = BROADCAST_PORT;
+	int gamePadServerPort = D3GAMEPADSERVER_PORT;
 	private boolean config_ok = false;
-	
+
 	/**
 	 * Get's Default Configuration for Broadcast Server & D3GamePad Server
 	 * 
